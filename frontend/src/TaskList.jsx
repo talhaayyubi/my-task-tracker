@@ -87,15 +87,18 @@ function TaskList({ refreshKey = 0 }) {
         <button onClick={() => setFilter('active')}>Active</button>
         <button onClick={() => setFilter('completed')}>Completed</button>
       </div>
-      <ul>
+      <ul className="task-list">
         {tasks.map((task) => (
-          <li key={task.id}>
+          <li
+            key={task.id}
+            className={`task-item${task.completed ? ' completed' : ''}`}
+          >
             <input
               type="checkbox"
               checked={!!task.completed}
               onChange={() => toggleCompleted(task.id)}
             />
-            {task.title}
+            <span className="task-title">{task.title}</span>
             <button onClick={() => deleteTask(task.id)}>Delete</button>
           </li>
         ))}
