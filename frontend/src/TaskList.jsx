@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 
-function TaskList() {
+function TaskList({ refreshKey = 0 }) {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let canceled = false
-    axios.get('/api/tasks')
+    setLoading(true)
+    axios
+      .get('/api/tasks')
       .then((res) => {
         if (!canceled) {
           setTasks(res.data)
@@ -24,7 +26,7 @@ function TaskList() {
     return () => {
       canceled = true
     }
-  }, [])
+  }, [refreshKey])
 
   if (loading) {
     return <p>Loading...</p>
