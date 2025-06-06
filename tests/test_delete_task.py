@@ -23,7 +23,9 @@ def client(tmp_path):
             title TEXT NOT NULL,
             description TEXT,
             completed BOOLEAN DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            due_date TEXT,
+            priority INTEGER
         )"""
     )
     conn.commit()

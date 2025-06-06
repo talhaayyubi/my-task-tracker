@@ -99,6 +99,12 @@ function TaskList({ refreshKey = 0 }) {
               onChange={() => toggleCompleted(task.id)}
             />
             <span className="task-title">{task.title}</span>
+            {task.due_date && (
+              <span className="task-due">Due: {task.due_date}</span>
+            )}
+            {task.priority !== null && task.priority !== undefined && (
+              <span className="task-priority">Priority: {task.priority}</span>
+            )}
             <button onClick={() => deleteTask(task.id)}>Delete</button>
           </li>
         ))}
