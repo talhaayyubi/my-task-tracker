@@ -88,5 +88,24 @@ def toggle_task(task_id):
         return jsonify({'error': 'Database error'}), 500
 
 
+@app.route('/api/tasks/<int:task_id>', methods=['DELETE'])
+def delete_task(task_id):
+    """Delete a task and return 204 on success."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.execute(
+            'DELETE FROM tasks WHERE id = ?',
+            (task_id,),
+        )
+        conn.commit()
+        conn.close()
+        if cursor.rowcount == 0:
+            return jsonify({'error': 'Task not found'}), 404
+        return '', 204
+    except sqlite3.Error as exc:
+        app.logger.error('Database error: %s', exc)
+        return jsonify({'error': 'Database error'}), 500
+
+
 if __name__ == '__main__':
     app.run()

@@ -18,6 +18,17 @@ function TaskList({ refreshKey = 0 }) {
       })
   }
 
+  const deleteTask = (id) => {
+    axios
+      .delete(`/api/tasks/${id}`)
+      .then(() => {
+        setTasks((prev) => prev.filter((t) => t.id !== id))
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+
   useEffect(() => {
     let canceled = false
     setLoading(true)
@@ -55,6 +66,7 @@ function TaskList({ refreshKey = 0 }) {
             onChange={() => toggleCompleted(task.id)}
           />
           {task.title}
+          <button onClick={() => deleteTask(task.id)}>Delete</button>
         </li>
       ))}
     </ul>
