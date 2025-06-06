@@ -32,11 +32,9 @@ def get_tasks():
 @app.route('/api/tasks', methods=['POST'])
 def create_task():
     """Create a new task and return it as JSON."""
-    data = request.get_json() or {}
-    title = (data.get('title') or '').strip()
+    data = request.get_json(silent=True) or {}
+    title = str(data.get('title', '')).strip()
     description = data.get('description')
-    due_date = data.get('due_date')
-    priority = data.get('priority')
 
     if not title:
         return jsonify({'error': 'Title is required'}), 400
@@ -44,13 +42,13 @@ def create_task():
     try:
         conn = get_db_connection()
         cursor = conn.execute(
-            'INSERT INTO tasks (title, description, completed, due_date, priority) VALUES (?, ?, ?, ?, ?)',
-            (title, description, False, due_date, priority),
+            'INSERT INTO tasks (title, description, completed) VALUES (?, ?, ?)',
+            (title, description, False),
         )
         conn.commit()
         task_id = cursor.lastrowid
         row = conn.execute(
-            'SELECT id, title, description, completed, due_date, priority, created_at FROM tasks WHERE id = ?',
+            'SELECT id, title, description, completed, created_at FROM tasks WHERE id = ?',
             (task_id,),
         ).fetchone()
         conn.close()
