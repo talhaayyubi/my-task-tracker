@@ -4,14 +4,38 @@ import axios from 'axios'
 function TaskList({ refreshKey = 0 }) {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState('all')
+
+  const applyFilter = (allTasks, currentFilter) => {
+    if (currentFilter === 'active') {
+      return allTasks.filter((t) => !t.completed)
+    }
+    if (currentFilter === 'completed') {
+      return allTasks.filter((t) => t.completed)
+    }
+    return allTasks
+  }
+
+  const fetchTasks = (currentFilter) => {
+    setLoading(true)
+    axios
+      .get('/api/tasks')
+      .then((res) => {
+        setTasks(applyFilter(res.data, currentFilter))
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }
 
   const toggleCompleted = (id) => {
     axios
       .put(`/api/tasks/${id}`)
-      .then((res) => {
-        setTasks((prev) =>
-          prev.map((t) => (t.id === id ? res.data : t))
-        )
+      .then(() => {
+        fetchTasks(filter)
       })
       .catch((err) => {
         console.error(err)
@@ -22,7 +46,7 @@ function TaskList({ refreshKey = 0 }) {
     axios
       .delete(`/api/tasks/${id}`)
       .then(() => {
-        setTasks((prev) => prev.filter((t) => t.id !== id))
+        fetchTasks(filter)
       })
       .catch((err) => {
         console.error(err)
@@ -36,7 +60,7 @@ function TaskList({ refreshKey = 0 }) {
       .get('/api/tasks')
       .then((res) => {
         if (!canceled) {
-          setTasks(res.data)
+          setTasks(applyFilter(res.data, filter))
         }
       })
       .catch((err) => {
@@ -50,26 +74,33 @@ function TaskList({ refreshKey = 0 }) {
     return () => {
       canceled = true
     }
-  }, [refreshKey])
+  }, [refreshKey, filter])
 
   if (loading) {
     return <p>Loading...</p>
   }
 
   return (
-    <ul>
-      {tasks.map((task) => (
-        <li key={task.id}>
-          <input
-            type="checkbox"
-            checked={!!task.completed}
-            onChange={() => toggleCompleted(task.id)}
-          />
-          {task.title}
-          <button onClick={() => deleteTask(task.id)}>Delete</button>
-        </li>
-      ))}
-    </ul>
+    <>
+      <div>
+        <button onClick={() => setFilter('all')}>All</button>
+        <button onClick={() => setFilter('active')}>Active</button>
+        <button onClick={() => setFilter('completed')}>Completed</button>
+      </div>
+      <ul>
+        {tasks.map((task) => (
+          <li key={task.id}>
+            <input
+              type="checkbox"
+              checked={!!task.completed}
+              onChange={() => toggleCompleted(task.id)}
+            />
+            {task.title}
+            <button onClick={() => deleteTask(task.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </>
   )
 }
 
