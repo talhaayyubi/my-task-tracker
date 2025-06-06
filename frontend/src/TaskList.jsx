@@ -5,6 +5,19 @@ function TaskList({ refreshKey = 0 }) {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
 
+  const toggleCompleted = (id) => {
+    axios
+      .put(`/api/tasks/${id}`)
+      .then((res) => {
+        setTasks((prev) =>
+          prev.map((t) => (t.id === id ? res.data : t))
+        )
+      })
+      .catch((err) => {
+        console.error(err)
+      })
+  }
+
   useEffect(() => {
     let canceled = false
     setLoading(true)
@@ -35,7 +48,14 @@ function TaskList({ refreshKey = 0 }) {
   return (
     <ul>
       {tasks.map((task) => (
-        <li key={task.id}>{task.title}</li>
+        <li key={task.id}>
+          <input
+            type="checkbox"
+            checked={!!task.completed}
+            onChange={() => toggleCompleted(task.id)}
+          />
+          {task.title}
+        </li>
       ))}
     </ul>
   )

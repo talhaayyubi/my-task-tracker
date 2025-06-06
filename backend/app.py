@@ -58,5 +58,35 @@ def create_task():
         return jsonify({'error': 'Database error'}), 500
 
 
+@app.route('/api/tasks/<int:task_id>', methods=['PUT'])
+def toggle_task(task_id):
+    """Toggle a task's completed status and return the updated task."""
+    try:
+        conn = get_db_connection()
+        row = conn.execute(
+            'SELECT completed FROM tasks WHERE id = ?',
+            (task_id,),
+        ).fetchone()
+        if row is None:
+            conn.close()
+            return jsonify({'error': 'Task not found'}), 404
+
+        new_completed = not bool(row['completed'])
+        conn.execute(
+            'UPDATE tasks SET completed = ? WHERE id = ?',
+            (new_completed, task_id),
+        )
+        conn.commit()
+        updated = conn.execute(
+            'SELECT id, title, description, completed, created_at FROM tasks WHERE id = ?',
+            (task_id,),
+        ).fetchone()
+        conn.close()
+        return jsonify(dict(updated))
+    except sqlite3.Error as exc:
+        app.logger.error('Database error: %s', exc)
+        return jsonify({'error': 'Database error'}), 500
+
+
 if __name__ == '__main__':
     app.run()
