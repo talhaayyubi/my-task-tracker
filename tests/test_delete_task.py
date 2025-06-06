@@ -3,6 +3,7 @@ import importlib.util
 from pathlib import Path
 import pytest
 
+# Load backend app module dynamically
 APP_PATH = Path(__file__).resolve().parents[1] / "backend" / "app.py"
 _spec = importlib.util.spec_from_file_location("backend_app", APP_PATH)
 backend_app = importlib.util.module_from_spec(_spec)
@@ -11,7 +12,7 @@ _spec.loader.exec_module(backend_app)
 
 @pytest.fixture()
 def client(tmp_path):
-    """Create a temporary db with one task and return Flask test client."""
+    """Create a temporary empty database and Flask test client."""
     old_db = backend_app.DATABASE
     db_path = tmp_path / "tasks.db"
 
@@ -25,11 +26,6 @@ def client(tmp_path):
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )"""
     )
-    # insert one task
-    conn.execute(
-        "INSERT INTO tasks (title, description, completed) VALUES (?, ?, ?)",
-        ("task", "desc", False),
-    )
     conn.commit()
     conn.close()
 
@@ -42,10 +38,16 @@ def client(tmp_path):
     backend_app.DATABASE = old_db
 
 
-def test_delete_task_removes_row(client):
-    response = client.delete("/api/tasks/1")
+def test_delete_task(client):
+    """POST then DELETE a task and ensure tasks list is empty."""
+    data = {"title": "task", "description": "desc"}
+    response = client.post("/api/tasks", json=data)
+    assert response.status_code == 201
+    task_id = response.get_json()["id"]
+
+    response = client.delete(f"/api/tasks/{task_id}")
     assert response.status_code == 204
 
-    response2 = client.get("/api/tasks")
-    assert response2.status_code == 200
-    assert response2.get_json() == []
+    response = client.get("/api/tasks")
+    assert response.status_code == 200
+    assert response.get_json() == []
