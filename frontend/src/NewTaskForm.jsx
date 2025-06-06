@@ -22,7 +22,7 @@ function NewTaskForm({ onTaskCreated }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="new-task-form">
       <div>
         <label>
           Title:
