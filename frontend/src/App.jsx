@@ -1,42 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import { CheckSquare } from 'lucide-react'
-import './App.css'
-import TaskList from './TaskList'
-import NewTaskForm from './NewTaskForm'
+import { useEffect } from 'react'
+import useSystemStore from './contexts/systemStore'
+import BootScreen from './components/BootScreen'
+import LoginScreen from './components/LoginScreen'
+import Desktop from './components/Desktop'
+import './styles/macos.css'
+import './styles/animations.css'
 
-function App() {
-  const [refreshKey, setRefreshKey] = useState(0)
+const App = () => {
+  const {
+    bootStage,
+    completeBoot,
+    login,
+    loggedIn,
+    theme,
+    wallpapers,
+    wallpaperIndex,
+  } = useSystemStore((state) => ({
+    bootStage: state.bootStage,
+    completeBoot: state.completeBoot,
+    login: state.login,
+    loggedIn: state.loggedIn,
+    theme: state.theme,
+    wallpapers: state.wallpapers,
+    wallpaperIndex: state.wallpaperIndex,
+  }))
 
-  return (
-    <>
-      {/* Header Section */}
-      <div className="header-section">
-        <div>
-          <a href="https://vite.dev" target="_blank">
-            <img src={viteLogo} className="logo" alt="Vite logo" />
-          </a>
-          <a href="https://react.dev" target="_blank">
-            <img src={reactLogo} className="logo react" alt="React logo" />
-          </a>
-        </div>
-        <h1>
-          <CheckSquare className="inline-icon" />
-          Task Tracker Pro
-        </h1>
-        <p className="subtitle">
-          Organize your tasks efficiently with our modern task management app
-        </p>
-      </div>
+  useEffect(() => {
+    if (bootStage === 'boot') {
+      const timeout = setTimeout(() => completeBoot(), 2800)
+      return () => clearTimeout(timeout)
+    }
+    return undefined
+  }, [bootStage, completeBoot])
 
-      {/* Main Task Container */}
-      <div className="task-container">
-        <NewTaskForm onTaskCreated={() => setRefreshKey((k) => k + 1)} />
-        <TaskList refreshKey={refreshKey} />
-      </div>
-    </>
-  )
+  useEffect(() => {
+    document.body.dataset.theme = theme
+    document.documentElement.style.setProperty('--wallpaper', wallpapers[wallpaperIndex])
+  }, [theme, wallpapers, wallpaperIndex])
+
+  if (bootStage === 'boot') {
+    return <BootScreen />
+  }
+
+  if (!loggedIn) {
+    return <LoginScreen onLogin={login} />
+  }
+
+  return <Desktop />
 }
 
 export default App

@@ -1,0 +1,25 @@
+.desktop,
+.window-frame,
+.dock-item,
+.launchpad,
+.spotlight,
+.mission-control,
+.notification-center,
+.control-center {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.window-frame {
+  animation: window-pop 0.25s ease;
+}
+
+@keyframes window-pop {
+  from {
+    transform: scale(0.92) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
